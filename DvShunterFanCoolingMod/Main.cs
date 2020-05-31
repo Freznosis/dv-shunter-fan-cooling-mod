@@ -31,10 +31,10 @@ namespace DvShunterFanCoolingMod
     }
 
     // init sound
-    [HarmonyPatch(typeof(TrainAudioShunter), "Start")]
+    [HarmonyPatch(typeof(LocoAudioShunter), "Start")]
     class TrainAudioShunter_Start_Patch
     {
-        static void Postfix(TrainAudioShunter __instance)
+        static void Postfix(LocoAudioShunter __instance)
         {
             __instance.gameObject.AddComponent<TrainAudioShunterCustom>();
         }
@@ -102,7 +102,7 @@ namespace DvShunterFanCoolingMod
 
         void Update()
         {
-            if (controller.EngineOn)
+            if (controller.GetEngineRunning())
             {
                 fanAudio.Set(controller.GetFan() ? 1f : 0.0f);
             }
