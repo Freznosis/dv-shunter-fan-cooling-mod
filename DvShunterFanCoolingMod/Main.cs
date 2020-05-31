@@ -31,29 +31,25 @@ namespace DvShunterFanCoolingMod
     }
 
     // init sound
-    [HarmonyPatch(typeof(LocoAudioShunter), "Start")]
-    class TrainAudioShunter_Start_Patch
+    [HarmonyPatch(typeof(LocoAudioShunter), "SetupForCar")]
+    class LocoAudioShunter_SetupForCar_Patch
     {
-        static void Postfix(LocoAudioShunter __instance)
+        static void Postfix(TrainCar car, LocoAudioShunter __instance)
         {
-            __instance.gameObject.AddComponent<TrainAudioShunterCustom>();
+            __instance.gameObject.AddComponent<LocoAudioShunterCustom>();
         }
     }
 
     // custom class for handling audio
-    class TrainAudioShunterCustom : MonoBehaviour
+    class LocoAudioShunterCustom : MonoBehaviour
     {
         LayeredAudio fanAudio;
         LocoControllerShunter controller;
 
         void Awake()
         {
-            var audioAnchors = transform?.Find("Audio anchors");
-            var engineAudio = audioAnchors.transform?.Find("Engine");
-
-            var Engine_Layered = engineAudio?.Find("Engine_Layered(Clone)");
-
-            var Engine_Layered_Audio = Engine_Layered.GetComponent<LayeredAudio>();
+            var engineAudio = transform?.Find("Engine/Engine_Layered");
+            var Engine_Layered_Audio = engineAudio.GetComponent<LayeredAudio>();
 
             var EngineFan_Layered = new GameObject();
             EngineFan_Layered.name = "EngineFan_Layered";
@@ -97,11 +93,15 @@ namespace DvShunterFanCoolingMod
             layeredAudio.masterVolume = 0.6f;
 
             fanAudio = layeredAudio;
-            controller = gameObject.GetComponent<LocoControllerShunter>();
+            controller = gameObject.transform.root.GetComponent<LocoControllerShunter>();
         }
 
         void Update()
         {
+
+            if (!controller)
+                return;
+            
             if (controller.GetEngineRunning())
             {
                 fanAudio.Set(controller.GetFan() ? 1f : 0.0f);
